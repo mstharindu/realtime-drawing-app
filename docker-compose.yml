@@ -3,13 +3,31 @@ services:
   nginx:
     depends_on:
       - client
+      - rethinkdb
     restart: always
     build:
       dockerfile: Dockerfile
       context: ./nginx
     ports:
-      - '3050:80'
+      - '3000:80'
   client:
     build:
       dockerfile: Dockerfile
       context: ./client
+  rethinkdb:
+    image: rethinkdb:latest
+    restart: always
+    ports:
+      - 8080:8080
+      - 28015:28015
+      - 29015:29015
+    command:
+      - /bin/bash
+      - -c
+      - |
+        rethinkdb create --initial-password  rethinkpassword
+        rethinkdb --bind all
+    volumes:
+      - rethinkdb_data:/data
+volumes:
+  rethinkdb_data:
