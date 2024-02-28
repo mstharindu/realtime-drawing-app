@@ -1,0 +1,15 @@
+version: '3'
+services:
+  nginx:
+    depends_on:
+      - client
+    restart: always
+    build:
+      dockerfile: Dockerfile
+      context: ./nginx
+    ports:
+      - '3050:80'
+  client:
+    build:
+      dockerfile: Dockerfile
+      context: ./client
