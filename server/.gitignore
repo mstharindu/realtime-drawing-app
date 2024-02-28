@@ -1,0 +1,28 @@
+# Node.js / Express.js
+node_modules/
+npm-debug.log
+
+# Environment variables
+.env
+
+# Dependency directories
+/lib-cov
+*.seed
+*.log
+*.csv
+
+# Grunt intermediate storage (https://github.com/gruntjs/grunt-contrib-clean)
+.grunt
+
+# Compiled binary addons (https://github.com/nodejs/node-gyp)
+/build/
+
+# Local development
+.DS_Store
+.idea/
+.vscode/
+*.sublime-*
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
