@@ -1,12 +1,16 @@
-const express = require('express');
-const { createServer } = require('http');
-const { Server } = require('socket.io');
+import express from 'express';
+import { createServer } from 'http';
+import { Socket, Server } from 'socket.io';
 
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer);
 
-io.on('connection', (socket) => {
+app.get('/api', (req, res) => {
+  res.send('Hello World!');
+});
+
+io.on('connection', (socket: Socket) => {
   console.log('socket connected');
 
   setInterval(() => {
