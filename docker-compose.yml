@@ -16,6 +16,8 @@ services:
       dockerfile: Dockerfile
       context: ./client
   api:
+    depends_on:
+      - rethinkdb
     build:
       dockerfile: Dockerfile
       context: ./server
