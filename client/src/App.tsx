@@ -1,10 +1,30 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
+import { io } from 'socket.io-client';
 
 function App() {
   const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    const socketInstance = io('http://localhost:3000');
+
+    // listen for events emitted by the server
+    socketInstance.on('connect', () => {
+      console.log('Connected to server');
+    });
+
+    socketInstance.on('interval', (data) => {
+      console.log(`Received message: ${data}`);
+    });
+
+    return () => {
+      if (socketInstance) {
+        socketInstance.disconnect();
+      }
+    };
+  }, []);
 
   return (
     <>
