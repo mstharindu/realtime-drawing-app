@@ -16,24 +16,38 @@ const createConnection = async () => {
       db: 'drawings',
       password: 'rethinkpassword',
     });
+    return conn;
     console.log('database connected');
   } catch (e) {
     console.error(e);
   }
 };
 
-createConnection();
-
 app.get('/api', (req, res) => {
   res.send('Hello World!');
 });
 
-io.on('connection', (socket: Socket) => {
-  console.log('socket connected');
+io.on('connection', async (socket: Socket) => {
+  const dbConnection = await createConnection();
 
-  setInterval(() => {
-    socket.emit('interval', new Date());
-  }, 1000);
+  // socket.on('subscribeToTimer', async (client) => {
+  //   const cursor = await r.table('timers').changes().run(dbConnection);
+
+  //   cursor.each((err, timerRow) => {
+  //     console.log('timerROw::::', timerRow);
+  //     client.emit('interval', timerRow.new_val.timestamp);
+  //   });
+  // });
+  const cursor = await r.table('timers').changes().run(dbConnection);
+
+  cursor.each((err, timerRow) => {
+    console.log('timerROw::::', timerRow);
+    socket.emit('interval', timerRow.new_val.timestamp);
+  });
+
+  // setInterval(() => {
+  //   socket.emit('interval', new Date());
+  // }, 1000);
 });
 
 httpServer.listen(5000, () => {
