@@ -1,0 +1,6 @@
+.drawing-canvas {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
