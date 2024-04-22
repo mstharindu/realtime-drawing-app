@@ -10,7 +10,8 @@ export const useCanvasDrawing = (
     height: number;
   },
   pointerPosition: PointerPosition,
-  strokeWidth: number
+  strokeWidth: number,
+  layerDraft: Layer | null
 ) => {
   useEffect(() => {
     const drawCanvas = () => {
@@ -21,12 +22,24 @@ export const useCanvasDrawing = (
       if (!ctx) return;
 
       clearCanvas(ctx, canvas);
-      drawLayers(ctx, layers);
+      drawLayers(ctx, [...layers]);
+
+      if (layerDraft) {
+        drawLayers(ctx, [layerDraft]);
+      }
+
       drawPointer(ctx, pointerPosition, strokeWidth);
     };
 
     drawCanvas();
-  }, [layers, canvasDimensions, pointerPosition, strokeWidth, canvasRef]);
+  }, [
+    layers,
+    canvasDimensions,
+    pointerPosition,
+    strokeWidth,
+    canvasRef,
+    layerDraft,
+  ]);
 };
 
 const clearCanvas = (

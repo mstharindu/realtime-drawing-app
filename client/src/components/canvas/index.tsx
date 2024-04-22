@@ -5,7 +5,7 @@ import './styles.css';
 import { Mode, StateContext } from '../../store';
 import { Layer } from '../../models/Layer';
 import { v4 as uuidv4 } from 'uuid';
-import { AddLayerCommand, DrawLayerCommand } from '../../models/Command';
+import { AddLayerCommand } from '../../models/Command';
 import { useHistory } from '../../hooks/useHistory';
 import { useCanvasDrawing } from '../../hooks/useCanvasDraw';
 import { useCanvasResize } from '../../hooks/useCanvasResize';
@@ -23,7 +23,7 @@ export const Canvas = () => {
   const [mode, setMode] = useState<Mode>(Mode.Pen);
   const [layers, setLayers] = useState<Layer[]>([]);
   const [pointerDown, setPointerDown] = useState<boolean>(false);
-  const [layerDraft, setLayerDraft] = useState<string | null>(null);
+  const [layerDraft, setLayerDraft] = useState<Layer | null>(null);
   const [fillColor, setFillColor] = useState<string>('#FF0000');
   const [strokeWidth, setStrokeWidth] = useState<number>(5);
 
@@ -32,7 +32,8 @@ export const Canvas = () => {
     layers,
     canvasDimensions,
     pointerPosition,
-    strokeWidth
+    strokeWidth,
+    layerDraft
   );
 
   const handleClick = useCallback(
@@ -61,28 +62,23 @@ export const Canvas = () => {
     setPointerDown(true);
 
     if (mode === Mode.Pen || mode === Mode.Eraser) {
-      const addLayerCommand = new AddLayerCommand({
-        layer: {
-          id: uuidv4(),
-          shape: [],
-          color: mode === Mode.Pen ? fillColor : '#FFFFFF',
-          strokeWidth,
-        },
-        setLayers,
+      setLayerDraft({
+        id: uuidv4(),
+        shape: [],
+        color: mode === Mode.Pen ? fillColor : '#FFFFFF',
+        strokeWidth,
       });
-
-      execute(addLayerCommand, true);
-
-      setLayerDraft(addLayerCommand.props.layer.id);
     }
   };
 
   const handlePointerUp = () => {
     setPointerDown(false);
 
-    if (layerDraft && (mode === Mode.Pen || mode === Mode.Eraser)) {
+    if (!layerDraft) return;
+
+    if (mode === Mode.Pen || mode === Mode.Eraser) {
       const addLayerCommand = new AddLayerCommand({
-        layer: layers.find((l) => l.id === layerDraft) as Layer,
+        layer: layerDraft,
         setLayers,
       });
 
@@ -93,18 +89,21 @@ export const Canvas = () => {
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (pointerDown && layerDraft) {
-      if (mode === Mode.Pen || mode === Mode.Eraser) {
-        const drawLayerCommand = new DrawLayerCommand({
-          layerId: layerDraft,
-          setLayers,
-          mousePosition: [e.clientX, e.clientY],
-        });
+    if (!pointerDown) return;
 
-        execute(drawLayerCommand, true);
+    if (!layerDraft) return;
 
-        return;
-      }
+    if (mode === Mode.Pen || mode === Mode.Eraser) {
+      setLayerDraft((prevLayer) => {
+        if (!prevLayer) return null;
+
+        return {
+          ...prevLayer,
+          shape: [...prevLayer.shape, [e.clientX, e.clientY]],
+        };
+      });
+
+      return;
     }
   };
 
