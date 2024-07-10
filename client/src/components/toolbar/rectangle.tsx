@@ -18,7 +18,7 @@ export const Rectangle: React.FC = () => {
         height="14"
         rx="2"
         stroke="#000000"
-        strokeWidth="2"
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
