@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import { Stage, Layer as KonvaLayer } from 'react-konva';
 import { Toolbar } from '../toolbar';
 import Rectangle from '../rectangle';
@@ -10,16 +10,27 @@ import { StorageContext } from '../../providers/storage-provider';
 import {
   AtLeastOne,
   CreateLayerCommand,
+  CreateLayerPayload,
   DeleteLayerCommand,
+  DeleteLayerPayload,
   UpdateLayerCommand,
+  UpdateLayerPayload,
 } from '../../commands';
 import randomColor from 'randomcolor';
 
 export const DrawingBoard = () => {
   const { canvasState, setCanvasState } = useContext(CanvasStateContext);
-  const { layers, setLayers, handleCommand } = useContext(StorageContext);
+  const { layers, setLayers, handleCommand, socket, setSelectedPayload } =
+    useContext(StorageContext);
 
   const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
+
+  const cb = useCallback(
+    (payload: CreateLayerPayload | UpdateLayerPayload | DeleteLayerPayload) => {
+      socket?.emit('layer-change', payload);
+    },
+    [socket]
+  );
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -39,6 +50,7 @@ export const DrawingBoard = () => {
       const deleteLayerCmd = new DeleteLayerCommand({
         layerId: selectedLayerId,
         setLayers,
+        cb,
       });
 
       handleCommand(deleteLayerCmd, false);
@@ -65,6 +77,7 @@ export const DrawingBoard = () => {
   };
 
   const onPointerUp = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
+    setSelectedPayload(null);
     //Insert rectangle
     if (canvasState.mode === Mode.Insert) {
       const stage = e.target.getStage();
@@ -87,6 +100,7 @@ export const DrawingBoard = () => {
       const createLayerCmd = new CreateLayerCommand({
         layer: newLayer,
         setLayers,
+        cb,
       });
 
       handleCommand(createLayerCmd, false);
@@ -104,6 +118,8 @@ export const DrawingBoard = () => {
       layerId,
       payload,
       setLayers,
+      setSelectedPayload,
+      cb,
     });
 
     handleCommand(updateLayerCmd, !actionEnd);

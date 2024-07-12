@@ -10,15 +10,18 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@types/randomcolor": "^0.5.9",
+    "lodash": "^4.17.21",
     "nanoid": "^5.0.7",
     "randomcolor": "^0.6.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-konva": "^18.2.10"
+    "react-konva": "^18.2.10",
+    "socket.io-client": "^4.7.5"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.6",
     "@types/node": "^20.12.12",
+    "@types/randomcolor": "^0.5.9",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
