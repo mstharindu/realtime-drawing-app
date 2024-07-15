@@ -48,6 +48,8 @@ export const useHistory = <T,>() => {
         if (canUndo()) undo();
       } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
         if (canRedo()) redo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+        getInfo();
       } else {
         return;
       }

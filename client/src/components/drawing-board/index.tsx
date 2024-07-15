@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect } from 'react';
 import { Stage, Layer as KonvaLayer } from 'react-konva';
 import { Toolbar } from '../toolbar';
 import Rectangle from '../rectangle';
@@ -19,11 +19,15 @@ import {
 import randomColor from 'randomcolor';
 
 export const DrawingBoard = () => {
-  const { canvasState, setCanvasState } = useContext(CanvasStateContext);
+  const {
+    canvasState,
+    setCanvasState,
+    selectedLayerId,
+    setSelectedLayerId,
+    fillColor,
+  } = useContext(CanvasStateContext);
   const { layers, setLayers, handleCommand, socket, setSelectedPayload } =
     useContext(StorageContext);
-
-  const [selectedLayerId, setSelectedLayerId] = useState<string | null>(null);
 
   const cb = useCallback(
     (payload: CreateLayerPayload | UpdateLayerPayload | DeleteLayerPayload) => {
@@ -31,6 +35,21 @@ export const DrawingBoard = () => {
     },
     [socket]
   );
+
+  useEffect(() => {
+    if (selectedLayerId) {
+      const updateLayerCmd = new UpdateLayerCommand({
+        layerId: selectedLayerId,
+        payload: { fill: fillColor },
+        setLayers,
+        setSelectedPayload,
+        cb,
+        updateLocalState: true,
+      });
+
+      handleCommand(updateLayerCmd, true);
+    }
+  }, [fillColor]);
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -120,6 +139,7 @@ export const DrawingBoard = () => {
       setLayers,
       setSelectedPayload,
       cb,
+      updateLocalState: actionEnd,
     });
 
     handleCommand(updateLayerCmd, !actionEnd);

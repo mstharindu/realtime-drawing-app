@@ -150,6 +150,7 @@ export const StorageProvider: FC<Props> = ({ children }) => {
             payload: payloadClone,
             setLayers,
             cb: () => {},
+            updateLocalState: true,
           });
 
           updateLayerCmd.execute();
@@ -174,14 +175,12 @@ export const StorageProvider: FC<Props> = ({ children }) => {
     command: Command<T>,
     skipHistory: boolean = false
   ) => {
-    if (!skipHistory) {
-      execute(command);
+    if (skipHistory) {
+      command.execute();
       return;
     }
 
-    if (command.executeCb) {
-      command.executeCb();
-    }
+    execute(command);
   };
 
   return (

@@ -7,6 +7,7 @@ import { Rectangle } from './rectangle';
 import { Select } from './select';
 import { CanvasStateContext } from '../../providers/state-provider';
 import { StorageContext } from '../../providers/storage-provider';
+import { Color } from './color';
 
 export const Toolbar = () => {
   const { setCanvasState, canvasState } = useContext(CanvasStateContext);
@@ -73,6 +74,8 @@ export const Toolbar = () => {
         >
           <Redo />
         </button>
+        <div className="divider"></div>
+        <Color />
       </div>
     </div>
   );

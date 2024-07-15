@@ -43,3 +43,43 @@
   pointer-events: none;
   opacity: 0.5;
 }
+
+input[type='color'] {
+  display: block;
+  width: 30px;
+  height: 33px;
+  cursor: pointer;
+}
+
+.color-picker {
+  position: relative;
+  display: inline-block;
+}
+
+.color-picker-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+.color-picker-popover {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 30px);
+  gap: 5px;
+  padding: 10px;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.color-picker-color {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  //border: 1px solid #000;
+  border-radius: 50%;
+}

@@ -33,6 +33,7 @@ export interface UpdateLayerProps {
   setLayers: Dispatch<SetStateAction<Layer[]>>;
   setSelectedPayload?: Dispatch<SetStateAction<SelectedPayload | null>>;
   cb: (payload: UpdateLayerPayload) => void;
+  updateLocalState?: boolean;
 }
 
 export interface DeleteLayerProps {
@@ -48,7 +49,6 @@ export abstract class Command<T> {
   }
   abstract execute(): void;
   abstract undo(): void;
-  abstract executeCb(): void;
 }
 
 export class CreateLayerCommand<T extends CreateLayerProps> extends Command<T> {
@@ -80,7 +80,6 @@ export class CreateLayerCommand<T extends CreateLayerProps> extends Command<T> {
       payload: { layerId: this.props.layer.id },
     });
   }
-  executeCb(): void {}
 }
 
 export class UpdateLayerCommand<T extends UpdateLayerProps> extends Command<T> {
@@ -92,23 +91,32 @@ export class UpdateLayerCommand<T extends UpdateLayerProps> extends Command<T> {
   }
 
   execute(): void {
-    this.props.setLayers((prevLayers) => {
-      return prevLayers.map((layer) => {
-        if (layer.id === this.props.layerId) {
-          // Store the previous state for undo
-          Object.keys(this.props.payload).forEach((key) => {
-            const typedKey = key as keyof Layer;
-            this.previousPayload = {
-              ...this.previousPayload,
-              [typedKey]: layer[typedKey],
-            };
-          });
-          // Apply the new properties
-          return { ...layer, ...this.props.payload };
-        }
-        return layer;
+    if (this.props.updateLocalState) {
+      this.props.setLayers((prevLayers) => {
+        return prevLayers.map((layer) => {
+          if (layer.id === this.props.layerId) {
+            // Store the previous state for undo
+            Object.keys(this.props.payload).forEach((key) => {
+              const typedKey = key as keyof Layer;
+              this.previousPayload = {
+                ...this.previousPayload,
+                [typedKey]: layer[typedKey],
+              };
+            });
+            // Apply the new properties
+            return { ...layer, ...this.props.payload };
+          }
+          return layer;
+        });
       });
-    });
+    }
+
+    if (this.props.setSelectedPayload) {
+      this.props.setSelectedPayload({
+        layerId: this.props.layerId,
+        affectedAttributes: Object.keys(this.previousPayload),
+      });
+    }
 
     this.props.cb({
       action: 'update',
@@ -128,20 +136,6 @@ export class UpdateLayerCommand<T extends UpdateLayerProps> extends Command<T> {
     this.props.cb({
       action: 'update',
       payload: { layerId: this.props.layerId, payload: this.previousPayload },
-    });
-  }
-
-  executeCb(): void {
-    if (this.props.setSelectedPayload) {
-      this.props.setSelectedPayload({
-        layerId: this.props.layerId,
-        affectedAttributes: Object.keys(this.previousPayload),
-      });
-    }
-
-    this.props.cb({
-      action: 'update',
-      payload: { layerId: this.props.layerId, payload: this.props.payload },
     });
   }
 }
@@ -184,5 +178,4 @@ export class DeleteLayerCommand<T extends DeleteLayerProps> extends Command<T> {
       });
     }
   }
-  executeCb(): void {}
 }
