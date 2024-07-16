@@ -49,7 +49,6 @@ interface Props {
 type StorageContextType = {
   layers: Layer[];
   setLayers: Dispatch<SetStateAction<Layer[]>>;
-  setSelectedPayload: Dispatch<SetStateAction<SelectedPayload | null>>;
   handleCommand: <T>(command: Command<T>, skipHistory: boolean) => void;
   undo: () => void;
   redo: () => void;
@@ -61,7 +60,6 @@ type StorageContextType = {
 export const StorageContext = createContext<StorageContextType>({
   layers: [],
   setLayers: () => {},
-  setSelectedPayload: () => {},
   handleCommand: () => {},
   undo: () => {},
   redo: () => {},
@@ -70,22 +68,14 @@ export const StorageContext = createContext<StorageContextType>({
   socket: null,
 });
 
-export interface SelectedPayload {
-  layerId: string;
-  affectedAttributes: string[];
-}
-
 export const StorageProvider: FC<Props> = ({ children }) => {
   const [layers, setLayers] = useState<Layer[]>([]);
-  const [selectedPayload, setSelectedPayload] =
-    useState<SelectedPayload | null>(null);
 
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
     const socketInstance = io('http://localhost:3000');
 
-    // listen for events emitted by the server
     socketInstance.on('connect', () => {
       console.log('Connected to server');
     });
@@ -125,29 +115,13 @@ export const StorageProvider: FC<Props> = ({ children }) => {
           break;
         }
         case 'update': {
-          let payloadClone: Partial<Layer> = {};
           const currentPayload = response.payload.payload;
 
-          if (selectedPayload?.layerId === response.payload.layerId) {
-            selectedPayload.affectedAttributes.forEach((attr: string) => {
-              const typedAttr = attr as keyof Layer;
-              const currentAttrValue = currentPayload[typedAttr];
-              if (currentAttrValue !== undefined) {
-                payloadClone = {
-                  ...payloadClone,
-                  [typedAttr]: currentAttrValue,
-                };
-              }
-            });
-          } else {
-            payloadClone = { ...currentPayload };
-          }
-
-          if (Object.keys(payloadClone).length === 0) return;
+          if (Object.keys(currentPayload).length === 0) return;
 
           const updateLayerCmd = new UpdateLayerCommand({
             layerId: response.payload.layerId,
-            payload: payloadClone,
+            payload: currentPayload,
             setLayers,
             cb: () => {},
             updateLocalState: true,
@@ -162,12 +136,12 @@ export const StorageProvider: FC<Props> = ({ children }) => {
       }
     };
 
-    if (socket) socket.on('layer-change', handleSocketUpdate);
+    if (socket) socket.on('live-change', handleSocketUpdate);
 
     return () => {
-      if (socket) socket.off('layer-change', handleSocketUpdate);
+      if (socket) socket.off('live-change', handleSocketUpdate);
     };
-  }, [socket, selectedPayload]);
+  }, [socket]);
 
   const { execute, undo, redo, canUndo, canRedo } = useHistory();
 
@@ -194,7 +168,6 @@ export const StorageProvider: FC<Props> = ({ children }) => {
         canUndo,
         canRedo,
         socket,
-        setSelectedPayload,
       }}
     >
       {children}

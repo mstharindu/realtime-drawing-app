@@ -12,7 +12,7 @@ export const handleSocketConnection = async (socket: Socket, io: Server) => {
   allObjectsCursor.each((err, record) => {
     if (err) throw err;
 
-    socket.emit('layer-change', {
+    socket.emit('live-change', {
       action: 'create',
       payload: { layer: record },
     });

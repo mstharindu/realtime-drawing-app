@@ -26,12 +26,19 @@ export const DrawingBoard = () => {
     setSelectedLayerId,
     fillColor,
   } = useContext(CanvasStateContext);
-  const { layers, setLayers, handleCommand, socket, setSelectedPayload } =
+  const { layers, setLayers, handleCommand, socket } =
     useContext(StorageContext);
 
   const cb = useCallback(
-    (payload: CreateLayerPayload | UpdateLayerPayload | DeleteLayerPayload) => {
-      socket?.emit('layer-change', payload);
+    (
+      payload: CreateLayerPayload | UpdateLayerPayload | DeleteLayerPayload,
+      skipPersistence?: boolean
+    ) => {
+      if (skipPersistence) {
+        socket?.emit('live-change', payload);
+      } else {
+        socket?.emit('state-change', payload);
+      }
     },
     [socket]
   );
@@ -42,12 +49,11 @@ export const DrawingBoard = () => {
         layerId: selectedLayerId,
         payload: { fill: fillColor },
         setLayers,
-        setSelectedPayload,
         cb,
         updateLocalState: true,
       });
 
-      handleCommand(updateLayerCmd, true);
+      handleCommand(updateLayerCmd, false);
     }
   }, [fillColor]);
 
@@ -96,7 +102,6 @@ export const DrawingBoard = () => {
   };
 
   const onPointerUp = (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => {
-    setSelectedPayload(null);
     //Insert rectangle
     if (canvasState.mode === Mode.Insert) {
       const stage = e.target.getStage();
@@ -137,9 +142,9 @@ export const DrawingBoard = () => {
       layerId,
       payload,
       setLayers,
-      setSelectedPayload,
       cb,
       updateLocalState: actionEnd,
+      skipPersistence: !actionEnd,
     });
 
     handleCommand(updateLayerCmd, !actionEnd);

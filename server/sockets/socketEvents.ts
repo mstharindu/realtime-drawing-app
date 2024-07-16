@@ -12,12 +12,12 @@ export const registerSocketEvents = async (io: Server) => {
     if (err) throw err;
 
     if (record.old_val == null) {
-      io.emit('layer-change', {
+      io.emit('live-change', {
         action: 'create',
         payload: { layer: record.new_val },
       });
     } else if (record.new_val == null) {
-      io.emit('layer-change', {
+      io.emit('live-change', {
         action: 'delete',
         payload: { layerId: record.old_val.id },
       });
@@ -32,7 +32,7 @@ export const registerSocketEvents = async (io: Server) => {
         }
       });
 
-      io.emit('layer-change', {
+      io.emit('live-change', {
         action: 'update',
         payload: { layerId: newValue.id, payload: updatedFields },
       });

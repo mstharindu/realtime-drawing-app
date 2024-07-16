@@ -1,6 +1,5 @@
 import { Dispatch, SetStateAction } from 'react';
 import { Layer } from './types';
-import { SelectedPayload } from './providers/storage-provider';
 
 export interface CreateLayerPayload {
   action: 'create';
@@ -31,9 +30,9 @@ export interface UpdateLayerProps {
   layerId: string;
   payload: Partial<Layer>;
   setLayers: Dispatch<SetStateAction<Layer[]>>;
-  setSelectedPayload?: Dispatch<SetStateAction<SelectedPayload | null>>;
-  cb: (payload: UpdateLayerPayload) => void;
+  cb: (payload: UpdateLayerPayload, skipPersistence?: boolean) => void;
   updateLocalState?: boolean;
+  skipPersistence?: boolean;
 }
 
 export interface DeleteLayerProps {
@@ -103,6 +102,7 @@ export class UpdateLayerCommand<T extends UpdateLayerProps> extends Command<T> {
                 [typedKey]: layer[typedKey],
               };
             });
+
             // Apply the new properties
             return { ...layer, ...this.props.payload };
           }
@@ -111,17 +111,13 @@ export class UpdateLayerCommand<T extends UpdateLayerProps> extends Command<T> {
       });
     }
 
-    if (this.props.setSelectedPayload) {
-      this.props.setSelectedPayload({
-        layerId: this.props.layerId,
-        affectedAttributes: Object.keys(this.previousPayload),
-      });
-    }
-
-    this.props.cb({
-      action: 'update',
-      payload: { layerId: this.props.layerId, payload: this.props.payload },
-    });
+    this.props.cb(
+      {
+        action: 'update',
+        payload: { layerId: this.props.layerId, payload: this.props.payload },
+      },
+      this.props.skipPersistence
+    );
   }
   undo(): void {
     this.props.setLayers((prevLayers) => {

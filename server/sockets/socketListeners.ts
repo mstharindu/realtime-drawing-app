@@ -3,7 +3,11 @@ import { getConnection } from '../services/dbService';
 import { r } from 'rethinkdb-ts';
 
 export const registerSocketListeners = (socket: Socket, io: Server) => {
-  socket.on('layer-change', async (data) => {
+  socket.on('live-change', (payload) => {
+    socket.broadcast.emit('live-change', payload);
+  });
+
+  socket.on('state-change', async (data) => {
     const dbConnection = await getConnection();
     if (!dbConnection) return;
 
@@ -31,6 +35,6 @@ export const registerSocketListeners = (socket: Socket, io: Server) => {
         break;
     }
 
-    io.emit('layer-change', payload);
+    io.emit('live-change', payload);
   });
 };
