@@ -4,6 +4,7 @@ import {
   ReactNode,
   SetStateAction,
   createContext,
+  useCallback,
   useEffect,
   useState,
 } from 'react';
@@ -55,6 +56,10 @@ type StorageContextType = {
   canUndo: () => boolean;
   canRedo: () => boolean;
   socket: Socket | null;
+  cb: (
+    payload: CreateLayerPayload | UpdateLayerPayload | DeleteLayerPayload,
+    skipPersistence?: boolean
+  ) => void;
 };
 
 export const StorageContext = createContext<StorageContextType>({
@@ -66,6 +71,7 @@ export const StorageContext = createContext<StorageContextType>({
   canUndo: () => false,
   canRedo: () => false,
   socket: null,
+  cb: () => {},
 });
 
 export const StorageProvider: FC<Props> = ({ children }) => {
@@ -88,6 +94,20 @@ export const StorageProvider: FC<Props> = ({ children }) => {
       }
     };
   }, [setSocket]);
+
+  const cb = useCallback(
+    (
+      payload: CreateLayerPayload | UpdateLayerPayload | DeleteLayerPayload,
+      skipPersistence?: boolean
+    ) => {
+      if (skipPersistence) {
+        socket?.emit('live-change', payload);
+      } else {
+        socket?.emit('state-change', payload);
+      }
+    },
+    [socket]
+  );
 
   useEffect(() => {
     const handleSocketUpdate = (
@@ -168,6 +188,7 @@ export const StorageProvider: FC<Props> = ({ children }) => {
         canUndo,
         canRedo,
         socket,
+        cb,
       }}
     >
       {children}

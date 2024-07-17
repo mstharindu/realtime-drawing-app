@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import { Stage, Layer as KonvaLayer } from 'react-konva';
 import { Toolbar } from '../toolbar';
 import Rectangle from '../rectangle';
@@ -10,13 +10,11 @@ import { StorageContext } from '../../providers/storage-provider';
 import {
   AtLeastOne,
   CreateLayerCommand,
-  CreateLayerPayload,
   DeleteLayerCommand,
-  DeleteLayerPayload,
   UpdateLayerCommand,
-  UpdateLayerPayload,
 } from '../../commands';
 import randomColor from 'randomcolor';
+import { Computer } from '../computer';
 
 export const DrawingBoard = () => {
   const {
@@ -26,22 +24,7 @@ export const DrawingBoard = () => {
     setSelectedLayerId,
     fillColor,
   } = useContext(CanvasStateContext);
-  const { layers, setLayers, handleCommand, socket } =
-    useContext(StorageContext);
-
-  const cb = useCallback(
-    (
-      payload: CreateLayerPayload | UpdateLayerPayload | DeleteLayerPayload,
-      skipPersistence?: boolean
-    ) => {
-      if (skipPersistence) {
-        socket?.emit('live-change', payload);
-      } else {
-        socket?.emit('state-change', payload);
-      }
-    },
-    [socket]
-  );
+  const { layers, setLayers, handleCommand, cb } = useContext(StorageContext);
 
   useEffect(() => {
     if (selectedLayerId) {
@@ -182,6 +165,7 @@ export const DrawingBoard = () => {
         </KonvaLayer>
       </Stage>
       <Toolbar />
+      <Computer />
     </>
   );
 };

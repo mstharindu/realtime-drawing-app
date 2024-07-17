@@ -1,0 +1,16 @@
+.computer-container {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  bottom: 24px;
+  right: 10px;
+}
+
+.computer-select {
+  margin-right: 10px;
+  padding: 5px;
+}
+
+.computer-submit {
+  padding: 5px 10px;
+}
