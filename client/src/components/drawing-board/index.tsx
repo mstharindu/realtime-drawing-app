@@ -14,7 +14,7 @@ import {
   UpdateLayerCommand,
 } from '../../commands';
 import randomColor from 'randomcolor';
-import { Computer } from '../computer';
+import { Emulator } from '../emulator';
 
 export const DrawingBoard = () => {
   const {
@@ -165,7 +165,7 @@ export const DrawingBoard = () => {
         </KonvaLayer>
       </Stage>
       <Toolbar />
-      <Computer />
+      <Emulator />
     </>
   );
 };
